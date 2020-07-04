@@ -272,8 +272,12 @@ pub fn apply(f: Rc<Expr>, args:Vec<Rc<Expr>>, env: &Rc<Env>) -> EResult {
     match &*f { 
         Closure(params, body, cap) => { 
             // Thread capture through current env
-            let new = Rc::new(Env::new(params.to_vec(), args, Some(cap.clone())));
-            eval(body.clone(), &new)    
+            if params.len() == args.len() { 
+                let new = Rc::new(Env::new(params.to_vec(), args, Some(cap.clone())));
+                eval(body.clone(), &new)    
+            } else { 
+                Err(ArityError(args.len(), params.len()))
+            }
         },
         Builtin(p) => p(args),
         _ => panic!()
