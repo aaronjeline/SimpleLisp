@@ -11,6 +11,7 @@ use num_traits::{Zero, One};
 use std::fs::read_to_string;
 
 const STDLIB: &'static str = "./stdlib.lsp";
+static mut CNTR: u32 = 0;
 
 pub fn build_std() -> Rc<Env> { 
     let mut e = Env::blank();
@@ -27,6 +28,7 @@ pub fn build_std() -> Rc<Env> {
     e.set("apply".to_string(), Rc::new(Builtin(apply)));
     e.set("write".to_string(), Rc::new(Builtin(write)));
     e.set("raise".to_string(), Rc::new(Builtin(raise)));
+    e.set("gensym".to_string(), Rc::new(Builtin(gensym)));
 
 
     let e = Rc::new(e);
@@ -35,6 +37,7 @@ pub fn build_std() -> Rc<Env> {
 
     e
 }
+
 
 fn load_stdlib(env: &Rc<Env>) { 
     match read_to_string(STDLIB) { 
@@ -52,6 +55,16 @@ fn load_stdlib(env: &Rc<Env>) {
 
 fn generic(s: &str) -> EvalError { 
     Generic(s.to_string())
+}
+
+fn gensym(_: Vec<Rc<Expr>>) -> EResult { 
+    let s:String;
+    unsafe { 
+        s = format!("symb{}", CNTR);
+        CNTR += 1;
+    }
+
+    Ok(Rc::new(Symbol(s)))
 }
 
 fn raise(mut e: Vec<Rc<Expr>>) -> EResult { 
