@@ -22,7 +22,7 @@ pub enum Token {
     #[token(",")]
     Unquote,
 
-    #[regex("[a-z+\\-*?][a-z\\-+*?0-9]*", |lex| lex.slice().to_string())]
+    #[regex("[!a-z+\\-*?][!a-z\\-+*?0-9]*", |lex| lex.slice().to_string())]
     Symbol(String),
 
     #[regex("[0-9]+", |lex| lex.slice().parse())]

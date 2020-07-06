@@ -40,10 +40,26 @@ fn eval_list(lst: Vec<Rc<Expr>>, env: &Rc<Env>) -> EResult {
                 "quasiquote" => eval_quasiquote(lst, env),
                 "unquote" => Err(UnQuoteOutsideQuote),
                 "catch" => eval_catch(lst, env),
+                "set!" => eval_set(lst, env),
                 _ => eval_call(lst, env),
             },
         _ => eval_call(lst, env)
         
+    }
+}
+
+fn eval_set(mut lst: Vec<Rc<Expr>>, env: &Rc<Env>) -> EResult { 
+    // (set! name value)
+    lst.remove(0);
+    if lst.len() == 2 { 
+        let name = lst.remove(0);
+        let value = lst.remove(0);
+        match &*name { 
+            Symbol(s) => env.modify(&s, value.clone()).map(|_| value),
+            _ => Err(TypeError("set!", "symbol", value.get_type()))
+        }
+    } else { 
+        Err(ArityError(lst.len(), 2))
     }
 }
 

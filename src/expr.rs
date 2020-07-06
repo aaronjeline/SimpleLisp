@@ -8,8 +8,9 @@ use std::fmt;
 pub type Result<T> = core::result::Result<T, EvalError>;
 pub type EResult = Result<Rc<Expr>>;
 
-const KEYWORDS: [&'static str; 9] = 
-    ["if", "let", "fun", "quote", "define", "begin", "unquote", "quasiquote", "catch"];
+const KEYWORDS: [&'static str; 10] = 
+    ["if", "let", "fun", "quote", "define", "begin", "unquote", "quasiquote", "catch",
+        "set!"];
 
 // Core Expression Form
 pub enum Expr { 
@@ -247,6 +248,15 @@ impl Env {
 
     pub fn set(&self, name: String, val: Rc<Expr>) {
         self.data.borrow_mut().insert(name, RefCell::new(val));
+    }
+
+    pub fn modify(&self, name: &str, val: Rc<Expr>) -> Result<()> { 
+        let rf = RefCell::new(val);
+        let dict = self.data.borrow();
+        let ptr = dict.get(name).ok_or(UnboundSymbol(name.to_string()))?;
+        ptr.swap(&rf);
+
+        Ok(())
     }
 
     // Replace dummy values w/ recursive bounds
